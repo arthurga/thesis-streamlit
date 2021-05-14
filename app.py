@@ -13,7 +13,7 @@ def main():
     # Setup - PAGES
     st.sidebar.title("Menu")
     menu = ["Home", "Exploration", "Model Building", "About"]
-    page = st.sidebar.selectbox("Please select a page", menu)
+    page = st.sidebar.radio("Please select a page", menu)
 
     if page == "Home":
         run_home_page()

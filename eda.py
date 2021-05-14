@@ -20,27 +20,20 @@ import missingno as msno
 import plotly
 import plotly.graph_objs as go
 import plotly.express as px
-
+import matplotlib.pyplot as plt
 from plotly import graph_objs as go
 
 from home_page import filtered_data
 
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
 
-st.markdown(
-	"""
-	<style>
-	.main {
-	background-color: #F5F5F5;
-	}
-	</style>
-	""",
-	unsafe_allow_html=True
-)
+@st.cache(suppress_st_warning=True)
+def eda_data():
+	df = filtered_data()
+	return df
 
-
-
-
-df = filtered_data()
+df = eda_data()
 df = df.drop('ucr_group', axis=1)
 
 
@@ -87,9 +80,6 @@ def get_value(val,my_dict):
             return value
 
 
-
-
-
 def count_plot(dataframe, column_name, title =None, hue = None):
     '''
     Function to plot seaborn count plot
@@ -105,58 +95,77 @@ def count_plot(dataframe, column_name, title =None, hue = None):
 
 def run_eda():
 	st.title("Exploratory Data Analysis")
-	submenu = st.sidebar.selectbox("Submenu",["EDA","Plots"])
+	submenu = st.sidebar.selectbox("Submenu",["EDA","Date"])
 	crimes = filtered_data()
 
 	if submenu == "EDA":
-		c1,c2 = st.beta_columns(2)
-		with c1:
-			with st.beta_expander("Victim Age Distribution"):
-				st.dataframe(crimes['victim_age'].value_counts())
-		with c2:
-			with st.beta_expander("Victim Race Distribution"):
-				st.dataframe(crimes['victim_race'].value_counts())
+		st.subheader("Information about dataset")
 
-		v1, v2 = st.beta_columns(2)
-		with v1:
-			with st.beta_expander("Victim Gender Distribution"):
-				st.dataframe(crimes['victim_gender'].value_counts())
-		with v2:
+		with st.beta_expander("Snapshot of Data"):
+			st.write(df.head().T)
+			st.write('Shape of dataset', df.shape)
 
-			with st.beta_expander("Day of Week Distribution"):
-				st.dataframe(crimes['dayofweek'].value_counts())
+		with st.beta_expander("Heat Map"):
+			fig, ax = plt.subplots()
+			sns.heatmap(df.corr(), ax=ax)
+			st.write(fig)
 
+		with st.beta_expander("Best features"):
+			X = df.iloc[:, 0:8]  # independent columns
+			y = df.iloc[:, -1]  # target column i.e clsd
+			bestfeatures = SelectKBest(score_func=chi2, k=5)
+			fit = bestfeatures.fit(X, y)
+			dfscores = pd.DataFrame(fit.scores_)
+			dfcolumns = pd.DataFrame(X.columns)
+			# Concat two dataframes for better visualization
+			featureScores = pd.concat([dfcolumns, dfscores], axis=1)
+			featureScores.columns = ["Specs", "Score"]  # naming the dataframe columns
+			st.write(featureScores.sort_values(by=['Score'], ascending=False))
 
-	elif submenu == "Plots":
-		st.subheader("Plotting")
+			# wandb.sklearn.plot_learning_curve(model, X, y)
 
-		with st.beta_expander("Bar Chart - Gender"):
-			victim_gender_dist = pd.DataFrame(crimes['victim_gender'].value_counts())
+		with st.beta_expander("Gender"):
+			victim_gender_dist = pd.DataFrame(df['victim_gender'].value_counts())
+			victim_gender_dist.index = ['FEMALE', 'MALE','UNKNOWN' ]
+			st.write(victim_gender_dist)
 			st.bar_chart(victim_gender_dist)
 
-
-		with st.beta_expander("Plot of Close Code"):
-			clsd_df = crimes['clsd'].value_counts().to_frame()
-			clsd_df = clsd_df.reset_index()
-			clsd_df.columns = ['Category', 'Counts']
-			p01 = px.pie(clsd_df, names='Category', values='Counts')
-			st.plotly_chart(p01, use_container_width=True)
-
-
-		with st.beta_expander("Plot of Offense"):
-			offense_dist = pd.DataFrame(crimes['ucr_group'].value_counts())
-			st.bar_chart(offense_dist)
-
-
-		with st.beta_expander("Plot of Race"):
-			race_df = crimes['victim_race'].value_counts().to_frame()
-			race_df = race_df.reset_index()
-			race_df.columns = ['victim_race', 'Counts']
-			p01 = px.bar(race_df, x='Counts', y='victim_race')
-			st.plotly_chart(p01, use_container_width=True)
-
+		with st.beta_expander("Race"):
+			race_dist = pd.DataFrame(crimes['victim_race'].value_counts())
+			st.bar_chart(race_dist)
 
 		with st.beta_expander("Age"):
 			age_dist = pd.DataFrame(crimes['victim_age'].value_counts())
+			st.write(age_dist)
 			st.bar_chart(age_dist)
+
+		with st.beta_expander("Close Code"):
+			clsd_dist = pd.DataFrame(df['clsd'].value_counts())
+			clsd_dist.index = ['NO ARREST', 'ARREST']
+			st.write(clsd_dist)
+			st.bar_chart(clsd_dist)
+
+
+
+	elif submenu == "Date":
+		with st.beta_expander("Geographical Map Area"):
+			st.map(crimes)
+
+		with st.beta_expander("Year"):
+			year_dist = pd.DataFrame(df['year'].value_counts())
+			st.line_chart(year_dist)
+
+		with st.beta_expander("Month"):
+			month_dist = pd.DataFrame(df['month'].value_counts())
+			st.bar_chart(month_dist)
+
+		with st.beta_expander("Week"):
+			week_dist = pd.DataFrame(crimes['dayofweek'].value_counts())
+			st.bar_chart(week_dist)
+
+		with st. beta_expander("Hour"):
+			hour_dist = pd.DataFrame(df['hour'].value_counts())
+			st.area_chart(hour_dist)
+
+
 

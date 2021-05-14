@@ -1,9 +1,10 @@
 # Core Packages
 import streamlit as st
 import streamlit.components.v1 as components
+from sodapy import Socrata
 import json
 import requests
-from sodapy import Socrata
+
 
 # EDA Packages
 import pandas as pd
@@ -11,17 +12,18 @@ import numpy as np
 import base64
 import time
 from datetime import datetime, timedelta
-from impyute.imputation.cs import mice
 
 # Data Viz Packages
 import matplotlib
 import matplotlib.pyplot as plt
 matplotlib.use('Agg')
 from wordcloud import WordCloud
-
-# Modeling Packages
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import plotly
+import plotly.graph_objs as go
+import plotly.express as px
+import matplotlib.pyplot as plt
+from plotly import graph_objs as go
+import folium
 
 
 # Load data
@@ -64,16 +66,15 @@ def filtered_data():
     month = crimes_df.date_reported.dt.month
     day = crimes_df.date_reported.dt.day
     hour = crimes_df.date_reported.dt.hour
-    minutes = crimes_df.date_reported.dt.minute
 
     time_df = pd.DataFrame({'year': year,
                             'month': month,
                             'day': day,
-                            'hour': hour,
-                            'minute': minutes})
+                            'hour': hour})
 
     df_concat = pd.concat([time_df, crimes_df], axis=1)
     final_df = df_concat.drop('date_reported', axis=1)
+
     final_df = final_df.dropna()
     final_df.drop_duplicates()
     final_df = final_df.reset_index(drop=True)
@@ -83,7 +84,7 @@ def filtered_data():
 header = st.beta_container()
 dataset = st.beta_container()
 features = st.beta_container()
-model_training = st.beta_container()
+maps = st.beta_container()
 
 
 def run_home_page():
@@ -92,27 +93,27 @@ def run_home_page():
 
     property_crimes = ['BURGLARY/BREAKING ENTERING', 'THEFT', 'UNAUTHORIZED USE']
     crime_selection = original_df[(original_df.ucr_group.isin(property_crimes))]
+    # crime_selection = original_df[original_df['ucr_group'].str.contains('|'.join(property_crimes), na=False)]
+    # crime_selection = original_df[original_df['ucr_group'].str.contains('BU', na=False)]
 
 
     with header:
         st.title('Neighborhood Safety Prediction App')
 
-        bgcolor = st.beta_color_picker("")
-
-        with st.beta_expander("Property Crimes", expanded=True):
-            day_text = " ".join(crime_selection['ucr_group'].tolist())
-            mywordcloud = WordCloud(background_color=bgcolor).generate(day_text)
-            fig = plt.figure()
-            plt.imshow(mywordcloud, interpolation='bilinear')
-            plt.axis('off')
-            st.pyplot(fig)
+        bgcolor = st.color_picker("")
+        st.write('Property Crimes')
+        day_text = " ".join(crime_selection['ucr_group'].tolist())
+        mywordcloud = WordCloud(background_color=bgcolor).generate(day_text)
+        fig = plt.figure()
+        plt.imshow(mywordcloud, interpolation='bilinear')
+        plt.axis('off')
+        st.pyplot(fig)
 
         st.markdown("""
                 This web application analyzes the safety of city of Cincinnati neighborhoods based on historical records of property crimes within the Cincinnati Metro area.
-                The app builds a predictive model by using historical crime data on victims of Property Crimes from the official portal of the Cincinnati Police Department.
-                The end product provides a Safety Score for a specific location at the time of inquiry.
-                Using geocoded address as input data from the end user along with biodata such as age, gender and race, the app translates the likelihood of an arrest at the location
-                as a measure of safety at the location and its surrounding areas for the user. The main goal of this project is to make the crime analytic information readily available to end users for better decision-making.
+                The end product provides a 'safety score' for a specific location at the time of inquiry.
+                Using geo-coded address as input data from the end user along with demographic information such as age, gender and race, the app translates the likelihood of an arrest at the location
+                as a measure of actual and perceived safety at the location for the user. The main goal of this project is protect users from becoming victims as opposed to catching a repeat offender.
 
                 * **Python libraries:** base64, pandas, streamlit
                 * **Data source:** [data.cincinnati-oh.gov](https://data.cincinnati-oh.gov/Safety/PDI-Police-Data-Initiative-Crime-Incidents/k59e-2pvf).
@@ -123,15 +124,47 @@ def run_home_page():
     with dataset:
         st.header('City of Cincinnati Crime Data')
         st.write(original_df.head())
+        st.write(original_df.shape)
         st.write('Original data dimensions: ' + str(original_df.shape[0]) + ' rows and ' + str(
-            original_df.shape[1]) + ' columns')
+            crime_selection.shape[1]) + ' columns')
 
-        st.subheader('Victim Gender Distribution on Crime Dataset')
-        victim_race_dist = pd.DataFrame(original_df['victim_gender'].value_counts()).head(10)
-        st.bar_chart(victim_race_dist)
+        st.subheader('Crime Type Distribution on Property Crime Dataset')
+        crime_type_dist = pd.DataFrame(crime_selection['ucr_group'].value_counts())
+        st.write(crime_type_dist)
+
+
+        crime_graph = px.bar(
+            crime_type_dist,
+            x=crime_type_dist.index,
+            y='ucr_group',
+            color=crime_type_dist.index)
+        st.plotly_chart(crime_graph)
+
 
     with features:
         st.header('Selected Features for Further Engineering')
         st.write(filtered_df.head().T)
+        st.write(filtered_df.shape)
         st.write('Filtered data dimensions: ' + str(filtered_df.shape[0]) + ' rows and ' + str(
             filtered_df.shape[1]) + ' columns')
+
+
+    with maps:
+        st.header('Map of Crime Incidents')
+        st.map(filtered_df)
+
+        # cincinnati_map = folium.Map(location=[39.15708362,-84.54130091],
+        #                                   zoom_start=13,
+        #                                   tiles="CartoDB dark_matter")
+        #
+        # st.write(cincinnati_map)
+        #
+        # for i in range(len(filtered_df[:100])):
+        #     lat = filtered_df['lat'][i]
+        #     long = filtered_df['lon'][i]
+        #     st.write(lat, long)
+        #     popup_text = """Community Index : {}<br>
+        #                     Block : {}<br>
+        #                     Crime Description : {}<br>"""
+        #     # popup_text = popup_text.format(i, filtered_df)
+        #     folium.CircleMarker(location = [lat, long], popup = popup_text, fill=True).add_to(cincinnati_map)
