@@ -77,7 +77,6 @@ models.append(("K-Nearest Neighbors", KNeighborsClassifier()))
 models.append(("Classification And Regression Tree", DecisionTreeClassifier()))
 models.append(("Naive Bayes", GaussianNB()))
 models.append(("Support Vector Machine", SVC()))
-models.append(("SMOTE", SMOTE()))
 
 
 # Evaluate Model Accuracy
@@ -109,11 +108,11 @@ for name, model in models:
 
 
 
-# Saving the model
-import pickle
-
-# Save to file in the current working directory
-pkl_filename = "CincyCrimes_clf.pkl"
-with open(pkl_filename, 'wb') as file:
-    pickle.dump(output, file)
+# # Saving the model
+# import pickle
+#
+# # Save to file in the current working directory
+# pkl_filename = "CincyCrimes_clf.pkl"
+# with open(pkl_filename, 'wb') as file:
+#     pickle.dump(output, file)
 
