@@ -461,33 +461,30 @@ def run_ml():
         st.markdown(f"**1.6. Best Model: {metDf_test.Model.iloc[0]} **")
 
 
-        #
-        # rf_cv = RandomForestClassifier()
-        # cv_scores = cross_val_score(rf_cv, X, y, cv=10)
-        # st.write(f'K-Fold = 10')
-        # st.write(f"cv_score:", cv_scores.mean())
-        # st.write(model_report)
+
+        rf_cv = RandomForestClassifier()
+        cv_scores = cross_val_score(rf_cv, X, y, cv=10)
+        st.write(f'K-Fold = 10')
+        st.write(f"cv_score:", cv_scores.mean())
+        st.write(model_report)
 
 
-        # st.write("--------------------------------------------------------------------------------\n")
-        # st.write('**1.7. Model Graphs**')
-        # c1, c2 = st.beta_columns(2)
-        # with c1:
-        #     st.write('Confusion Matrix')
-        #     fig, ax = plt.subplots()
-        #     plot_confusion_matrix(top_param, X_test, y_test, ax=ax)
-        #     st.write(fig)
-        #
-        # with c2:
-        #     st.write('ROC Curve')
-        #     fig2, ax2 = plt.subplots()
-        #     plot_roc_curve(top_param, X_test, y_test, ax=ax2)
-        #     st.write(fig2)
-        #
-        # # Save the model
-        # rf_model = open("rf_crime_model.pkl", "wb")
-        # joblib.dump(top_param, rf_model)
-        # rf_model.close()
+        st.write("--------------------------------------------------------------------------------\n")
+        st.write('**1.7. Model Graphs**')
+        c1, c2 = st.beta_columns(2)
+        with c1:
+            st.write('Confusion Matrix')
+            fig, ax = plt.subplots()
+            plot_confusion_matrix(top_param, X_test, y_test, ax=ax)
+            st.write(fig)
+
+        with c2:
+            st.write('ROC Curve')
+            fig2, ax2 = plt.subplots()
+            plot_roc_curve(top_param, X_test, y_test, ax=ax2)
+            st.write(fig2)
+
+
 
 
 
