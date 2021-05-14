@@ -143,7 +143,7 @@ pyasn1-modules==0.2.8
 pyasn1==0.4.8
 pycparser==2.20
 pydeck==0.4.0b2
-pygments==2.6.1
+pygments==2.7.4
 pymeeus==0.5.11
 pymongo==3.10.1
 pyparsing==2.4.7
