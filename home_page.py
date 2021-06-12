@@ -93,8 +93,6 @@ def run_home_page():
 
     property_crimes = ['BURGLARY/BREAKING ENTERING', 'THEFT', 'UNAUTHORIZED USE']
     crime_selection = original_df[(original_df.ucr_group.isin(property_crimes))]
-    # crime_selection = original_df[original_df['ucr_group'].str.contains('|'.join(property_crimes), na=False)]
-    # crime_selection = original_df[original_df['ucr_group'].str.contains('BU', na=False)]
 
 
     with header:
@@ -152,19 +150,3 @@ def run_home_page():
     with maps:
         st.header('Map of Crime Incidents')
         st.map(filtered_df)
-
-        # cincinnati_map = folium.Map(location=[39.15708362,-84.54130091],
-        #                                   zoom_start=13,
-        #                                   tiles="CartoDB dark_matter")
-        #
-        # st.write(cincinnati_map)
-        #
-        # for i in range(len(filtered_df[:100])):
-        #     lat = filtered_df['lat'][i]
-        #     long = filtered_df['lon'][i]
-        #     st.write(lat, long)
-        #     popup_text = """Community Index : {}<br>
-        #                     Block : {}<br>
-        #                     Crime Description : {}<br>"""
-        #     # popup_text = popup_text.format(i, filtered_df)
-        #     folium.CircleMarker(location = [lat, long], popup = popup_text, fill=True).add_to(cincinnati_map)
