@@ -4,7 +4,6 @@ import streamlit.components.v1 as components
 import json
 import requests
 import seaborn as sns
-from sodapy import Socrata
 from collections import Counter
 
 # Utils
