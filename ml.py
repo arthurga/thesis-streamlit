@@ -33,7 +33,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import LinearSVC
-from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import BernoulliNB
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.calibration import CalibratedClassifierCV, calibration_curve
 
@@ -282,9 +282,9 @@ def KNN_Classifier(X_train, X_test, y_train, y_test):
 @st.cache(suppress_st_warning=True)
 def NaiveBayes(X_train, X_test, y_train, y_test):
     # Train the model
-    gnb_clf = GaussianNB()
-    gnb_clf.fit(X_train, y_train)
-    y_pred_train = gnb_clf.predict(X_train)
+    bnb_clf = BernoulliNB(binarize=0.0)
+    bnb_clf.fit(X_train, y_train)
+    y_pred_train = bnb_clf.predict(X_train)
     train_score = metrics.accuracy_score(y_train, y_pred_train) * 100
     train_r_score = metrics.recall_score(y_train, y_pred_train)
     train_p_score = metrics.precision_score(y_train, y_pred_train)
@@ -294,7 +294,7 @@ def NaiveBayes(X_train, X_test, y_train, y_test):
     train_cm = confusion_matrix(y_train, y_pred_train)
 
     # Test
-    y_pred_test = gnb_clf.predict(X_test)
+    y_pred_test = bnb_clf.predict(X_test)
     test_score = metrics.accuracy_score(y_test, y_pred_test) * 100
     test_r_score = metrics.recall_score(y_test, y_pred_test)
     test_p_score = metrics.precision_score(y_test, y_pred_test)
@@ -304,7 +304,7 @@ def NaiveBayes(X_train, X_test, y_train, y_test):
     test_cm = confusion_matrix(y_test, y_pred_test)
 
     return train_score, train_p_score, train_r_score, train_f_score, train_logloss, train_cm, train_report, \
-           test_score, test_p_score, test_r_score, test_f_score, test_logloss, test_cm, test_report, gnb_clf
+           test_score, test_p_score, test_r_score, test_f_score, test_logloss, test_cm, test_report, bnb_clf
 
 
 # Evaluate Model Accuracy
@@ -458,7 +458,7 @@ def run_ml():
         st.dataframe(metDf_test.iloc[:, :-2])
         st.write("--------------------------------------------------------------------------------\n")
 
-        st.markdown(f"**1.6. Best Model: {metDf_test.Model.iloc[0]} **")
+        st.markdown(f"**1.6. Model Choice: {metDf_test.Model.iloc[0]} **")
 
 
 
@@ -484,7 +484,7 @@ def run_ml():
             plot_roc_curve(top_param, X_test, y_test, ax=ax2)
             st.write(fig2)
 
-
+    #
 
 
 

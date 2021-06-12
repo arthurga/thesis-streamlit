@@ -122,7 +122,6 @@ def run_eda():
 			featureScores.columns = ["Specs", "Score"]  # naming the dataframe columns
 			st.write(featureScores.sort_values(by=['Score'], ascending=False))
 
-			# wandb.sklearn.plot_learning_curve(model, X, y)
 
 		with st.beta_expander("Gender"):
 			victim_gender_dist = pd.DataFrame(df['victim_gender'].value_counts())
@@ -130,8 +129,17 @@ def run_eda():
 			st.write(victim_gender_dist)
 			st.bar_chart(victim_gender_dist)
 
+			# gender = df.groupby('victim_gender').sum()
+			# fig = go.Figure(
+			# 	df[go.Bar(x=gender.index.values, y=gender)]
+			# )
+			# st.write(fig.show())
+
+
+
 		with st.beta_expander("Race"):
 			race_dist = pd.DataFrame(crimes['victim_race'].value_counts())
+			st.write(race_dist)
 			st.bar_chart(race_dist)
 
 		with st.beta_expander("Age"):
