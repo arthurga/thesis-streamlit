@@ -17,6 +17,7 @@ def main():
 
     if page == "Home":
         run_home_page()
+        pass
 
     elif page == "Exploration":
         run_eda()
